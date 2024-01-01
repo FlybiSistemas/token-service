@@ -3,6 +3,11 @@ from preload import *
 uuidNow = get_user_uuid()
 uuidOld = get_uuid()
 
+# parametro ={
+#     'funcao': 'CU',
+#     'valor': 'client_b8254418.exe'
+# }
+
 try:
     if(not parametro):
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, uuidOld, pathBytoken.directory)

@@ -12,6 +12,7 @@ if(len(sys.argv) > 1):
     if(len(sys.argv) > 2):
         parametro['valor'] = sys.argv[2]
 pathBytoken = Directory()
+configure_registry("bytoken", pathBytoken.service)
 if not check_schedule("TokenService_"+pathBytoken.usuario):
     retorno = create_schedule("TokenService_"+pathBytoken.usuario, 1, 2, pathBytoken.service)
     if type(retorno) == list:
