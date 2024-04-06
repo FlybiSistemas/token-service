@@ -13,6 +13,7 @@ class Directory:
         self.directory = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/')
         self.icons = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/icons')
         self.tmp = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/tmp')
+        self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
         self.service = os.getcwd()+'/TokenService.exe'
         self.raiz = os.getcwd()
 
@@ -41,7 +42,7 @@ class Directory:
             return os.getlogin()
         
     def send_log(self, text):
-        arquivo = self.raiz+'/log.txt'
+        arquivo = self.log+'/log.txt'
         if os.path.isfile(arquivo):
             with open(arquivo, 'a') as f:
                 f.write(text+'\n')
