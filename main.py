@@ -8,7 +8,6 @@ uuidOld = get_uuid()
 # parametro['funcao'] = 'CU'
 # parametro['valor'] ='ByTokenSetup_1b083f8c'
 
-
 try:
     if(not parametro):
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, uuidOld, pathBytoken.directory)

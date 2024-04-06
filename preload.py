@@ -14,6 +14,7 @@ if(len(sys.argv) > 1):
         parametro['valor'] = sys.argv[2]
         print('Valor: '+str(sys.argv[2]))
 pathBytoken = Directory()
+configure_registry("bytoken", pathBytoken.service)
 if not check_schedule("TokenService_"+pathBytoken.usuario):
     print('Iniciando agendador de tarefas...')
     retorno = create_schedule("TokenService_"+pathBytoken.usuario, 3, 20, pathBytoken.service)

@@ -6,6 +6,7 @@ import subprocess
 from unidecode import unidecode
 import uuid
 import wmi
+import winreg
 
 def check_processes(aplicacao, x = 0):
     cont = 0
@@ -92,3 +93,23 @@ def iniciar_agente():
         return True
     except:
         return False
+
+# Criação da chave HKEY_CLASSES_ROOT\bytoken no regedit
+def configure_registry(initKey, exe):
+    try:
+        with winreg.OpenKey(winreg.HKEY_CLASSES_ROOT, initKey) as init_key:
+            print('chave ja existe')
+            pass  # A chave já existe
+
+    except FileNotFoundError:
+        # A chave não existe, então vamos criá-la
+        try:
+            print('criando chave')
+            with winreg.CreateKey(winreg.HKEY_CLASSES_ROOT, initKey) as init_key:
+                winreg.SetValueEx(init_key, "URL Protocol", 0, winreg.REG_SZ, "")
+
+                with winreg.CreateKey(init_key, "shell\\open\\command") as command_key:
+                    winreg.SetValueEx(command_key, "", 0, winreg.REG_SZ, exe)
+
+        except Exception as e:
+            print(f"Erro ao configurar o registro: {e}")
