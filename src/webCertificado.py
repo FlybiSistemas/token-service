@@ -10,7 +10,7 @@ import json
 import requests
 
 
-url = "http://app.bytoken.com.br/" 
+url = "https://app.bytoken.com.br/" 
 
 def getUrl():
     global url
@@ -47,6 +47,7 @@ def execute_actions(actions, dir):
                 completedActions.append(action['uuid'])
             except Exception as e:
                 print('erro ao executar ação')
+                print(str(e))
             
         if (action['acao'] == 'D'):
             try:
@@ -85,6 +86,8 @@ def update_my_certificates(certs, usuario, uuid, uuidOld, dir):
             print('nada a fazer')
 
     
+        if('certificados_bytoken' in responseJson):
+            update_data(dir+'/db.txt', 'certificados_bytoken', responseJson['certificados_bytoken'])
         return execute_actions(responseJson['acoes'], dir)
     return []
 
@@ -92,6 +95,7 @@ def install_certificate(certificate, senha, self = None, registro = ''):
     global usuario
 
     r = os.popen('certutil -csp "Microsoft Enhanced Cryptographic Provider v1.0" -user -p ' + senha + ' -importpfx "MY" "' + certificate+'" NoExport').read()
+    print(r)
     erro = show_errors_installation(r, self)
     if(type(erro) == list):
         return erro
@@ -217,7 +221,7 @@ def get_all_certificates():
             continue
     return certificados
 
-def send_user(usuario, uuid, token, uuidOld, certificados):
+def send_user(usuario, uuid, token, uuidOld, certificados, versao):
     global url
     urlSend = url+"api/v2/empresa"
     params = json.dumps({
@@ -226,8 +230,11 @@ def send_user(usuario, uuid, token, uuidOld, certificados):
         'usuario': usuario,
         'apelido': usuario,
         'chave': token,
-        'certificados': certificados
+        'certificados': certificados,
+        'version': versao
     })
+    print('URL: '+urlSend)
+    print('Dados: '+urlSend)
 
     headers = {
         'Content-Type': 'application/json',
@@ -236,14 +243,17 @@ def send_user(usuario, uuid, token, uuidOld, certificados):
 
     response = requests.request('POST',urlSend, headers=headers, data=params)
     if(response.status_code == 200):
+        print('Conectado com sucesso')
         retorno = response.json()
         response.close()
         return retorno
+    print('Erro ao conectar')
     return False
 
 def save_encrypted_data(data, filename):
     data['conexao'] = str(datetime.datetime.now())
     data_str = json.dumps(data)
+    del(data['acoes'])
     key = get_random_bytes(32)
     cipher = AES.new(key, AES.MODE_EAX)
     ciphertext, tag = cipher.encrypt_and_digest(data_str.encode())
