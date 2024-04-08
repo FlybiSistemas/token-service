@@ -3,7 +3,8 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.1.6'
+import webbrowser
+versao = '2.2.6'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))

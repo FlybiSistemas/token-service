@@ -5,6 +5,7 @@ uuidOld = get_uuid()
 
 # uuidNow = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
 # uuidOld = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
+# parametro = {}
 # parametro['funcao'] = 'CU'
 # parametro['valor'] ='ByTokenSetup_1b083f8c'
 
@@ -12,6 +13,10 @@ try:
     if(not parametro):
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, uuidOld, pathBytoken.directory)
         update_status_actions(completedActions)
+        sys.exit()
+
+    if('AN' in parametro['funcao']): #Setar permissão de notificação
+        update_data(pathBytoken.directory+'/db.txt', 'notificacoes', 1)
         sys.exit()
 
     if('AC' in parametro['funcao']): #Atualizar certificados
@@ -44,12 +49,15 @@ try:
                 pg.alert('Erro não identificado', 'Erro', 'OK')
                 sys.exit()
 
-    if('CU' in parametro['funcao']):
+    if('CU' in parametro['funcao']): #Conectar usuário
         try:
-            retorno = send_user(pathBytoken.usuario, uuidNow, parametro['valor'], uuidOld, pathBytoken.get_object_certificates(), versao)
-            print('salvar dados no banco')
-            save_encrypted_data(retorno, pathBytoken.directory+'/db.txt')
-            print('Conexão '+pathBytoken.usuario+' finalizada!')
+            key = get_key_data(pathBytoken.directory+'/db.txt', 'notificacoes')
+            if(not key):
+                retorno = send_user(pathBytoken.usuario, uuidNow, parametro['valor'], uuidOld, pathBytoken.get_object_certificates(), versao)
+                print('salvar dados no banco')
+                webbrowser.open('https://app.bytoken.com.br/successfully?uuid='+uuidNow)
+                save_encrypted_data(retorno, pathBytoken.directory+'/db.txt')
+                print('Conexão '+pathBytoken.usuario+' finalizada!')
         except Exception as e:
             pathBytoken.send_log(str(e))
             # pg.alert(text='Erro ao conectar usuário '+pathBytoken.usuario+', favor reiniciar o programa.', title='Erro', button='OK')

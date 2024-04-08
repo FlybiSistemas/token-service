@@ -1,5 +1,6 @@
 from src.utils import *
 
+# pip install pycryptodomex
 from Cryptodome.Cipher import AES
 from Cryptodome.Util.Padding import unpad, pad
 from Cryptodome.Random import get_random_bytes
@@ -282,3 +283,12 @@ def update_data(filename, chave, valor):
     data = decrypt_data(filename)
     data[chave] = valor
     save_encrypted_data(data, filename)
+
+def get_key_data(filename, chave):
+    try:
+        data = decrypt_data(filename)
+        if(data[chave]):
+            return data[chave]
+        return False
+    except:
+        return False
