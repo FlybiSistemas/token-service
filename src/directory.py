@@ -71,7 +71,9 @@ class Directory:
                     numero_serie = line.split(":")[1].strip()
 
                 if ('Requerente' in line):
-                    requerente = line.split(',')[0].split(': CN=')[1].split(':')
+                    camposRequerente = line.replace('Requerente: ','').split(',')
+                    requerente = next((item for item in camposRequerente if "CN=" in item), None)
+                    requerente = requerente.split('=')[1].split(":")
                     if len(requerente) == 1:
                         continue
                     cnpj = requerente[1].strip()

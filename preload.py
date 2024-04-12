@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.1.6'
+versao = '2.2.9'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))

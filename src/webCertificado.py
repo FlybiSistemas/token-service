@@ -106,6 +106,7 @@ def install_certificate(certificate, senha, self = None, registro = ''):
 
 def uninstall_certificate(serie):
     retorno = os.popen('certutil -user -delstore "MY" '+serie).read()
+    print(retorno)
     if("Excluindo certificado" in retorno and "comando conclu" in retorno):
         razao = retorno.split("CN=")[1].split(":")[0]
         return razao
@@ -158,7 +159,10 @@ def get_object_certificates():
                 numero_serie = line.split(":")[1].strip()
 
             if ('Requerente' in line):
-                requerente = line.split(',')[0].split(': CN=')[1].split(':')
+                camposRequerente = line.replace('Requerente: ','').split(',')
+                requerente = next((item for item in camposRequerente if "CN=" in item), None)
+                requerente = requerente.split('=')[1].split(":")
+                # requerente = line.split(',')[0].split(': CN=')[1].split(':')
                 if len(requerente) == 1:
                     #print("Não é um certificado do usuário")
                     continue
@@ -174,7 +178,8 @@ def get_object_certificates():
                     }
                 )
                 cont = cont + 1
-        except:
+        except Exception as e:
+            print(e)
             continue
     return certificados
 

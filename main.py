@@ -5,7 +5,8 @@ uuidOld = get_uuid()
 
 # uuidNow = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
 # uuidOld = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
-# parametro['funcao'] = 'CU'
+# parametro = {}
+# parametro['funcao'] = 'AC'
 # parametro['valor'] ='ByTokenSetup_1b083f8c'
 
 try:
