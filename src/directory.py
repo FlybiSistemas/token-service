@@ -7,15 +7,29 @@ class Directory:
     service = ''
     tmp = ''
     usuario = ''
+    success = False
+    message = ''
 
     def __init__(self):
         self.usuario = self.get_user()
-        self.directory = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/')
-        self.icons = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/icons')
-        self.tmp = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/tmp')
-        self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
-        self.service = os.getcwd()+'/TokenService.exe'
-        self.raiz = os.getcwd()
+        for i in range(0, 2):
+            try:
+                self.directory = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/')
+                self.icons = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/icons')
+                self.tmp = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/tmp')
+                self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
+                self.service = os.getcwd()+'/TokenService.exe'
+                self.raiz = os.getcwd()
+                self.success = True
+                break
+            except:
+                retorno = self.scan_users_ad(self.usuario)
+                if(retorno['qtd'] != 1):
+                    self.message = 'Foram encontrados '+str(retorno['qtd'])+' usuários para essa maquina.'
+                    self.success = False
+                    break
+                self.usuario = retorno['user']
+                continue
 
     def set_directory(self, dir):
         self.directory = dir
@@ -91,3 +105,19 @@ class Directory:
             except:
                 continue
         return certificados
+
+    def scan_users_ad(self, usuario):
+        valid_user = ''
+        cont_user = 0
+        for user in os.listdir('C:/Users'):
+            if(usuario in user):
+                print('Usuario encontradao: '+user)
+                cont_user = cont_user + 1
+                valid_user = user
+
+        print('Retornando user: '+valid_user+', cont: '+str(cont_user))
+        return {
+            'user': valid_user,
+            'qtd': cont_user
+        }
+                

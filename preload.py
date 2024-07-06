@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.2.9'
+versao = '2.2.16'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))
@@ -14,6 +14,9 @@ if(len(sys.argv) > 1):
         parametro['valor'] = sys.argv[2]
         print('Valor: '+str(sys.argv[2]))
 pathBytoken = Directory()
+if(not pathBytoken.success):
+    pg.alert('Usuário Error', pathBytoken.message)
+    sys.exit()
 configure_registry("bytoken", pathBytoken.service)
 if not check_schedule("TokenService_"+pathBytoken.usuario):
     print('Iniciando agendador de tarefas...')

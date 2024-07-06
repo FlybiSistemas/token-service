@@ -3,25 +3,29 @@ from preload import *
 uuidNow = get_user_uuid()
 uuidOld = get_uuid()
 
-# uuidNow = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
-# uuidOld = 'NUYwNDcxN0UtOEUwMi0xMUU4LTlBQzMtNjRGODU4NDQxQTAwYW5kcmVzYS5zaWx2YQ=='
-# parametro = {}
-# parametro['funcao'] = 'AC'
+# uuidNow = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
+# uuidOld = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
+parametro = {}
+parametro['funcao'] = 'IE'
 # parametro['valor'] ='ByTokenSetup_1b083f8c'
+parametro['valor'] ='F8wSFudF85ey24DFsilhtgltOySwsnbrZBMWWHlDcGJo'
 
 try:
     if(not parametro):
+        print('Iniciando atualização padrão')
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, uuidOld, pathBytoken.directory)
         update_status_actions(completedActions)
         sys.exit()
 
     if('AC' in parametro['funcao']): #Atualizar certificados
+        print('Iniciando chamda de atualização')
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, uuidOld, pathBytoken.directory)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         sys.exit()
 
     if('IE' in parametro['funcao']): #Atualizar com chave recebida por email
+        print('Iniciando atualização por email')
         response = get_certificates(parametro['valor'], pathBytoken.usuario, uuidNow, uuidOld)
         if(response.status_code == 200):
             try:
@@ -46,6 +50,7 @@ try:
                 sys.exit()
 
     if('CU' in parametro['funcao']):
+        print('Iniciando cadastro de usuário')
         try:
             retorno = send_user(pathBytoken.usuario, uuidNow, parametro['valor'], uuidOld, pathBytoken.get_object_certificates(), versao)
             print('salvar dados no banco')
@@ -55,6 +60,9 @@ try:
             pathBytoken.send_log(str(e))
             # pg.alert(text='Erro ao conectar usuário '+pathBytoken.usuario+', favor reiniciar o programa.', title='Erro', button='OK')
         sys.exit()
+
+    print('finalizando ...')
     
 except Exception as e:
+    print('erro: '+str(e))
     pathBytoken.send_log(str(e))
