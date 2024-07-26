@@ -61,6 +61,27 @@ try:
             # pg.alert(text='Erro ao conectar usuário '+pathBytoken.usuarioNome+', favor reiniciar o programa.', title='Erro', button='OK')
         sys.exit()
 
+    if('AE' in parametro['funcao']): #Atualizar extensão
+        arquivo = os.path.join(pathBytoken.extensions, 'com.bytoken.bytoken.json')
+        with open(arquivo, 'r') as f:
+            dados = json.load(f)
+        # os.popen('"C:\Program Files\Google\Chrome\Application\chrome.exe" --load-extension="'+pathBytoken.raiz+'/assistenteByToken" --new-window "https://bytoken.com.br"')
+        # if(dados['allowed_origins'][0] == 'chrome-extension://alterar_valor/'):
+            # pg.sleep(5)
+            # extension = None
+            # extension_id_arquivo = 'C:/Users/'+pathBytoken.usuario+'/Downloads/extension_id.txt'
+            # with open(extension_id_arquivo, 'r') as f:
+                # extension = f.read()
+            # if(extension != None):
+                # dados['allowed_origins'] = [f'chrome-extension://{extension}/']
+                # with open(arquivo, 'w') as f:
+                    # json.dump(dados, f, indent=4)
+        extension = parametro['valor']
+        dados['allowed_origins'] = [f'chrome-extension://{extension}/']
+        with open(arquivo, 'w') as f:
+            json.dump(dados, f, indent=4)
+        pg.alert('Extensão configurada com sucesso!!')
+
     print('finalizando ...')
     
 except Exception as e:
