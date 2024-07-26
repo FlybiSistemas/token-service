@@ -1,0 +1,9 @@
+{
+    "name": "com.bytoken.bytoken",
+    "description": "My Application",
+    "path": "C:/Program Files (x86)/ByToken/mon.exe",
+    "type": "stdio",
+    "allowed_origins": [
+        "chrome-extension://alterar_valor/"
+    ]
+}

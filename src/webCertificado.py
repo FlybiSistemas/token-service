@@ -10,7 +10,9 @@ import json
 import requests
 
 
-url = "https://app.bytoken.com.br/" 
+# url = "https://app.bytoken.com.br/" 
+url = "https://hom.bytoken.com.br/" 
+# url = "http://flytoken.local/" 
 
 def getUrl():
     global url
@@ -198,7 +200,8 @@ def get_certificates(chave, usuario, uuid, uuidOld):
         'Content-Type': 'application/json'
     }
 
-    return requests.request('POST',url, headers=headers, data=params)
+    retorno = requests.request('POST',url, headers=headers, data=params)
+    retorno = requests.post(url, params)
 
 def get_all_certificates():
     cont = 0
@@ -251,6 +254,9 @@ def send_user(usuario, uuid, token, uuidOld, certificados, versao):
         print('Conectado com sucesso')
         retorno = response.json()
         response.close()
+        retorno['perfil'] = {}
+        retorno['perfil']['uuid'] = uuid
+        retorno['perfil']['usuario'] = usuario
         return retorno
     print('Erro ao conectar')
     return False

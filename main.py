@@ -5,10 +5,10 @@ uuidOld = get_uuid()
 
 # uuidNow = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
 # uuidOld = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
-parametro = {}
-parametro['funcao'] = 'IE'
+# parametro = {}
+# parametro['funcao'] = 'CU'
 # parametro['valor'] ='ByTokenSetup_1b083f8c'
-parametro['valor'] ='F8wSFudF85ey24DFsilhtgltOySwsnbrZBMWWHlDcGJo'
+# parametro['valor'] ='F8wSFudF85ey24DFsilhtgltOySwsnbrZBMWWHlDcGJo'
 
 try:
     if(not parametro):
@@ -52,13 +52,13 @@ try:
     if('CU' in parametro['funcao']):
         print('Iniciando cadastro de usuário')
         try:
-            retorno = send_user(pathBytoken.usuario, uuidNow, parametro['valor'], uuidOld, pathBytoken.get_object_certificates(), versao)
+            retorno = send_user(pathBytoken.usuarioNome, uuidNow, parametro['valor'], uuidOld, pathBytoken.get_object_certificates(), versao)
             print('salvar dados no banco')
             save_encrypted_data(retorno, pathBytoken.directory+'/db.txt')
-            print('Conexão '+pathBytoken.usuario+' finalizada!')
+            print('Conexão '+pathBytoken.usuarioNome+' finalizada!')
         except Exception as e:
             pathBytoken.send_log(str(e))
-            # pg.alert(text='Erro ao conectar usuário '+pathBytoken.usuario+', favor reiniciar o programa.', title='Erro', button='OK')
+            # pg.alert(text='Erro ao conectar usuário '+pathBytoken.usuarioNome+', favor reiniciar o programa.', title='Erro', button='OK')
         sys.exit()
 
     print('finalizando ...')

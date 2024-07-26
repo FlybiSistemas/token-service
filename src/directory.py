@@ -6,30 +6,25 @@ class Directory:
     raiz = ''
     service = ''
     tmp = ''
+    certificados = ''
+    extensions = ''
     usuario = ''
+    usuarioNome = ''
     success = False
     message = ''
 
     def __init__(self):
         self.usuario = self.get_user()
-        for i in range(0, 2):
-            try:
-                self.directory = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/')
-                self.icons = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/icons')
-                self.tmp = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/tmp')
-                self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
-                self.service = os.getcwd()+'/TokenService.exe'
-                self.raiz = os.getcwd()
-                self.success = True
-                break
-            except:
-                retorno = self.scan_users_ad(self.usuario)
-                if(retorno['qtd'] != 1):
-                    self.message = 'Foram encontrados '+str(retorno['qtd'])+' usuários para essa maquina.'
-                    self.success = False
-                    break
-                self.usuario = retorno['user']
-                continue
+        self.usuarioNome = os.getlogin()
+        self.directory = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/')
+        self.icons = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/icons')
+        self.tmp = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/tmp')
+        self.certificados = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/certificados')
+        self.extensions = self.create_dir('C:/Users/'+self.usuario+'/AppData/Local/Google/Chrome/User Data/Default/Extensions')
+        self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
+        self.service = os.getcwd()+'/TokenService.exe'
+        self.raiz = os.getcwd()
+        self.success = True
 
     def set_directory(self, dir):
         self.directory = dir
@@ -48,12 +43,22 @@ class Directory:
 
     def get_user(self):
         try:
-            username = self.raiz.split('Users')[1].split(os.path.sep)[1]
+            user_dir = os.path.expanduser('~')
+            username = os.path.basename(user_dir)
             if(username != None):
                 return username
-            return os.getlogin()
+            user_dir = os.getenv('USERPROFILE')
+            username = os.path.basename(user_dir)
+            if(username != None):
+                return username
         except (IndexError, FileNotFoundError):
-            return os.getlogin()
+            try:
+                user_dir = os.getenv('USERPROFILE')
+                username = os.path.basename(user_dir)
+                if(username != None):
+                    return username
+            except:
+                return os.getlogin()
         
     def send_log(self, text):
         arquivo = self.log+'/log.txt'
@@ -121,3 +126,12 @@ class Directory:
             'qtd': cont_user
         }
                 
+    def remove_created_dir(self):
+        if self.directory and os.path.exists(self.directory):
+            for root, dirs, files in os.walk(self.directory, topdown=False):
+                for name in files:
+                    os.remove(os.path.join(root, name))
+                for name in dirs:
+                    os.rmdir(os.path.join(root, name))
+            os.rmdir(self.directory)
+            

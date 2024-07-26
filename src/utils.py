@@ -2,6 +2,7 @@ import base64
 import os
 import psutil
 import pythoncom
+import shutil
 import subprocess
 from unidecode import unidecode
 import uuid
@@ -113,3 +114,34 @@ def configure_registry(initKey, exe):
 
         except Exception as e:
             print(f"Erro ao configurar o registro: {e}")
+
+def configure_native_messaging_host(host_name, json_file_path, pathBytoken):
+    json_file_path = "C:/Users/"+pathBytoken.usuario+"/"+json_file_path
+    key_path = f'Software\\Google\\Chrome\\NativeMessagingHosts\\{host_name}'
+    try:
+        if not os.path.exists(os.path.dirname(json_file_path)):
+            os.makedirs(os.path.dirname(json_file_path))
+        
+        destination_file = pathBytoken.raiz+'/'+host_name+'.json'
+        if not os.path.exists(json_file_path):
+            # os.remove(json_file_path)
+            shutil.copy(destination_file, json_file_path)
+        
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_path, 0, winreg.KEY_SET_VALUE) as key:
+                print(f'Chave "{key_path}" já existe. Atualizando valor.')
+                winreg.SetValueEx(key, None, 0, winreg.REG_SZ, json_file_path)
+        except FileNotFoundError:
+            print(f'Criando chave "{key_path}"')
+            with winreg.CreateKey(winreg.HKEY_CURRENT_USER, key_path) as key:
+                winreg.SetValueEx(key, None, 0, winreg.REG_SZ, json_file_path)
+        
+    except Exception as e:
+        print(f"Erro ao configurar o registro: {e}")
+
+def get_extension_ids():
+    try:
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r"SOFTWARE\Google\Chrome\Extensions") as key:
+            return [winreg.EnumKey(key, i) for i in range(winreg.QueryInfoKey(key)[0])]
+    except FileNotFoundError:
+        return []
