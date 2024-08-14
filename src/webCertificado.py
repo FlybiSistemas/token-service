@@ -70,12 +70,11 @@ def get_plataform_actions(url, params):
         return response.json()
     return False
 
-def update_my_certificates(certs, usuario, uuid, uuidOld, dir):
+def update_my_certificates(certs, usuario, uuid, dir):
     global url
     urlActions = url+"api/v2/acoes"
     params = json.dumps({
         'uuid_usuario': uuid,
-        'uuid_usuario_antigo': uuidOld,
         'certificados': certs,
         'usuario': usuario
     })
@@ -185,7 +184,7 @@ def get_object_certificates():
             continue
     return certificados
 
-def get_certificates(chave, usuario, uuid, uuidOld):
+def get_certificates(chave, usuario, uuid):
     url = getUrl()+"api/v2/acoes/token-mail"
     certs = get_all_certificates()
     certs = json.dumps(certs)
@@ -193,7 +192,6 @@ def get_certificates(chave, usuario, uuid, uuidOld):
         'chave': chave,
         'usuario': usuario,
         'uuid_usuario': uuid,
-        'uuid_usuario_antigo': uuidOld,
         'certificados': certs,
     })
     headers = {
@@ -229,12 +227,11 @@ def get_all_certificates():
             continue
     return certificados
 
-def send_user(usuario, uuid, token, uuidOld, certificados, versao):
+def send_user(usuario, uuid, token, certificados, versao):
     global url
     urlSend = url+"api/v2/empresa"
     params = json.dumps({
         'uuid_usuario': uuid,
-        'uuid_usuario_antigo': uuidOld,
         'usuario': usuario,
         'apelido': usuario,
         'chave': token,

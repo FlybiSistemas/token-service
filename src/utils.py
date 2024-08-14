@@ -39,14 +39,16 @@ def get_uuid():
 
 def get_user_uuid():
     cod_uuid = ''
+    mac = ''
     try:
         # Tentando pegar o UUID da Maquina
         cod_uuid = wmi.WMI().Win32_ComputerSystemProduct()[0].UUID
+        mac = hex(uuid.getnode()).replace('0x', '').upper()
     except:
         # Tentando pegar o MAC da maquina
         cod_uuid = hex(uuid.getnode()).replace('0x', '').upper()
     usuario = os.getlogin()
-    uuidHash = cod_uuid+usuario
+    uuidHash = cod_uuid+mac+usuario
     uuidHash = base64.b64encode(uuidHash.encode('utf-8'))
     return uuidHash.decode()
 
