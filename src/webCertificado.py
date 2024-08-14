@@ -10,8 +10,8 @@ import json
 import requests
 
 
-# url = "https://app.bytoken.com.br/" 
-url = "https://hom.bytoken.com.br/" 
+url = "https://app.bytoken.com.br/" 
+# url = "https://hom.bytoken.com.br/" 
 # url = "http://flytoken.local/" 
 
 def getUrl():
