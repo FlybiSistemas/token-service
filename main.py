@@ -1,14 +1,18 @@
 from preload import *
 
-uuidNow = get_user_uuid()
+try:
+    db_data = decrypt_data(pathBytoken.directory+'/db.txt')
+    uuidNow = db_data['perfil']['uuid']
+except:
+    uuidNow = get_user_uuid()
 # uuidOld = get_uuid()
 
 # uuidNow = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
 # uuidOld = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
 # parametro = {}
-# parametro['funcao'] = 'CU'
+# parametro['funcao'] = 'IE'
 # parametro['valor'] =' ByTokenSetup_868e3298'
-# parametro['valor'] ='F8wSFudF85ey24DFsilhtgltOySwsnbrZBMWWHlDcGJo'
+# parametro['valor'] ='3ZOwnBAtsMAIG19BA56CAk2xWWp2pxb2QyFhP1aHkXlA'
 
 try:
     if(not parametro):

@@ -198,8 +198,7 @@ def get_certificates(chave, usuario, uuid):
         'Content-Type': 'application/json'
     }
 
-    retorno = requests.request('POST',url, headers=headers, data=params)
-    retorno = requests.post(url, params)
+    return requests.request('POST',url, headers=headers, data=params)
 
 def get_all_certificates():
     cont = 0
