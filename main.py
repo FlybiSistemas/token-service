@@ -10,14 +10,15 @@ except:
 # uuidNow = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
 # uuidOld = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
 # parametro = {}
-# parametro['funcao'] = 'IE'
+# parametro['funcao'] = 'AC'
 # parametro['valor'] =' ByTokenSetup_868e3298'
 # parametro['valor'] ='3ZOwnBAtsMAIG19BA56CAk2xWWp2pxb2QyFhP1aHkXlA'
 
 try:
     if(not parametro):
         print('Iniciando atualização padrão')
-        completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        object_cerficates = get_object_certificates()
+        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken.directory)
         update_status_actions(completedActions)
         sys.exit()
 
@@ -85,6 +86,10 @@ try:
         with open(arquivo, 'w') as f:
             json.dump(dados, f, indent=4)
         pg.alert('Extensão configurada com sucesso!!')
+
+    if('SC' in parametro['funcao']): #Enviar certificado usado
+        send_used_certificate(parametro['valor'], parametro['aux'], pathBytoken.usuario, uuidNow)
+        sys.exit()
 
     print('finalizando ...')
     

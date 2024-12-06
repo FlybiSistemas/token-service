@@ -5,6 +5,7 @@ class Directory:
     icons = ''
     raiz = ''
     service = ''
+    monitor = ''
     tmp = ''
     certificados = ''
     extensions = ''
@@ -23,6 +24,7 @@ class Directory:
         self.extensions = self.create_dir('C:/Users/'+self.usuario+'/AppData/Local/Google/Chrome/User Data/Default/Extensions')
         self.log = self.create_dir('C:/Users/'+self.usuario+'/arquivos_bytoken/log')
         self.service = os.getcwd()+'/TokenService.exe'
+        self.monitor = os.getcwd()+'/ByTokenMonitor.exe'
         self.raiz = os.getcwd()
         self.success = True
 

@@ -20,26 +20,17 @@ def getUrl():
 
 def execute_actions(actions, dir):
     completedActions = []
+    print(str(len(actions))+' ações a serem executadas')
     for action in actions:
         if (action['acao'] == 'I'):
             try:
-                chave = b'flybi2022sistemascriptografia!@#'
-                iv = b'flybisistemas123'
-                cipher = AES.new(chave, AES.MODE_CBC, iv)
                 texto_criptografado = base64.b64decode(action['certificado'])
-
                 chave = b'flybi2022sistemascriptografia!@#'
                 iv = b'flybisistemas123'
 
-                cipher2 = AES.new(chave, AES.MODE_CBC, iv)
-                conteudo_base64_2 = cipher2.decrypt(texto_criptografado)
-                
-                conteudoBase64 = cipher.decrypt(texto_criptografado)
-                base64pad = pad(conteudoBase64, 16)
-                texto_descriptografado = base64.b64decode(base64pad)
-
-
-                conteudoFinal = base64.b64decode(conteudo_base64_2)
+                cipher = AES.new(chave, AES.MODE_CBC, iv)
+                conteudo_base64 = cipher.decrypt(texto_criptografado)
+                conteudoFinal = base64.b64decode(conteudo_base64)
                 
                 f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
                 f.write(conteudoFinal)
@@ -66,6 +57,7 @@ def get_plataform_actions(url, params):
     }
 
     response = requests.request('POST',url, headers=headers, data=params)
+    print('status: '+str(response.status_code))
     if(response.status_code == 200):
         return response.json()
     return False
@@ -78,6 +70,8 @@ def update_my_certificates(certs, usuario, uuid, dir):
         'certificados': certs,
         'usuario': usuario
     })
+    print('conectando a '+url)
+    print('uuid '+uuid)
 
     responseJson = get_plataform_actions(urlActions, params)
     if(responseJson):
@@ -152,12 +146,15 @@ def get_object_certificates():
 
             if ("Emissor" in line):
                 emissor = line.split(",")[0].split('=')[1]
+                continue
 
             if ("NotAfter" in line):
                 data_validade = line.split(":")[1].strip().split(' ')[0]
+                continue
 
             if ("Número de Série" in line):
                 numero_serie = line.split(":")[1].strip()
+                continue
 
             if ('Requerente' in line):
                 camposRequerente = line.replace('Requerente: ','').split(',')
@@ -179,6 +176,7 @@ def get_object_certificates():
                     }
                 )
                 cont = cont + 1
+                continue
         except Exception as e:
             print(e)
             continue
@@ -289,3 +287,25 @@ def update_data(filename, chave, valor):
     data = decrypt_data(filename)
     data[chave] = valor
     save_encrypted_data(data, filename)
+    
+def send_used_certificate(cnpj, ip, usuario, uuid):
+    global url
+    urlUsuario = url+"api/v2/usuarios/register-site"
+    params = json.dumps({
+        'cnpj': cnpj,
+        'ip': ip,
+        'usuario': usuario,
+        'uuid': uuid,
+    })
+    
+    print('eviando dados')
+    print(params)
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request('POST',urlUsuario, headers=headers, data=params)
+    print(response.status_code)
+    return []
+

@@ -38,11 +38,13 @@ def get_uuid():
         return hex(uuid.getnode()).replace('0x', '').upper()
 
 def get_user_uuid():
+    # TO DO usar ( wmic bios get serialnumber )
     cod_uuid = ''
     mac = ''
     try:
-        # Tentando pegar o UUID da Maquina
+        # Tentando pegar o UUID da Maquina ( wmic csproduct get UUID )
         cod_uuid = wmi.WMI().Win32_ComputerSystemProduct()[0].UUID
+        # getmac
         mac = hex(uuid.getnode()).replace('0x', '').upper()
     except:
         # Tentando pegar o MAC da maquina
@@ -84,6 +86,17 @@ def check_agente():
     if("agente.exe" in r):
         return True
     return False
+# Função para garantir que o monitoramento esta rodando
+def check_monitor(monitor):
+    r = os.popen("tasklist").read()
+    if("ByTokenMonitor.exe" in r):
+        return True
+    print("Iniciando monitor em: "+str(monitor))
+    try:
+        subprocess.Popen([monitor])
+    except:
+        print('Não foi possivel iniciar o monitor.')
+    return True
 
 def iniciar_agente():
     if(check_agente()):
