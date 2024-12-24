@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.4.22'
+versao = '2.5.24'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))
@@ -16,6 +16,7 @@ if(len(sys.argv) > 1):
     if(len(sys.argv) > 3):
         parametro['aux'] = sys.argv[3]
         print('Auxiliar: '+str(sys.argv[3]))
+# parametro['valor'] = 'ByTokenSetup_1b083f8c'
 pathBytoken = Directory()
 if(not pathBytoken.success):
     pg.alert('Usuário Error', pathBytoken.message)
@@ -36,5 +37,5 @@ except Exception as e:
     pathBytoken.remove_created_dir()
     pg.alert(title="Error", text="Tive algum erro ao tentar parametrizar sua extensão.")
     sys.exit()
-if(not check_monitor(pathBytoken.monitor)):
-    sys.exit()
+# if(not check_monitor(pathBytoken.monitor)):
+#     sys.exit()

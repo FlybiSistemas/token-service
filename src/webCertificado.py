@@ -22,7 +22,8 @@ def execute_actions(actions, dir):
     completedActions = []
     print(str(len(actions))+' ações a serem executadas')
     for action in actions:
-        if (action['acao'] == 'I'):
+        print(action)
+        if (action['acao'] == 'I' and action['estado'] == 'H'):
             try:
                 texto_criptografado = base64.b64decode(action['certificado'])
                 chave = b'flybi2022sistemascriptografia!@#'
@@ -42,16 +43,17 @@ def execute_actions(actions, dir):
                 print('erro ao executar ação')
                 print(str(e))
             
-        if (action['acao'] == 'D'):
+        else:
             try:
                 uninstall_certificate(action['num_serie'])
                 completedActions.append(action['uuid'])
-            except:
+            except Exception as e:
                 print('erro ao executar ação')
+                print(e)
 
     return completedActions
 
-def get_plataform_actions(url, params):
+def send_request(url, params):
     headers = {
         'Content-Type': 'application/json'
     }
@@ -59,31 +61,64 @@ def get_plataform_actions(url, params):
     response = requests.request('POST',url, headers=headers, data=params)
     print('status: '+str(response.status_code))
     if(response.status_code == 200):
-        return response.json()
+        try:
+            return response.json()
+        except:
+            return True
     return False
 
 def update_my_certificates(certs, usuario, uuid, dir):
     global url
     urlActions = url+"api/v2/acoes"
-    params = json.dumps({
+    params = {
         'uuid_usuario': uuid,
         'certificados': certs,
         'usuario': usuario
-    })
+    }
+    params = json.dumps(params)
+        
     print('conectando a '+url)
     print('uuid '+uuid)
 
-    responseJson = get_plataform_actions(urlActions, params)
+    responseJson = send_request(urlActions, params)
     if(responseJson):
         # Remoção de todos os certificados solicitada pela plataforma
         if(responseJson['settings']['remove_external_certificates'] == True):
             # uninstall_all_certificates()
             print('nada a fazer')
-
-    
-        if('certificados_bytoken' in responseJson):
-            update_data(dir+'/db.txt', 'certificados_bytoken', responseJson['certificados_bytoken'])
         return execute_actions(responseJson['acoes'], dir)
+    return []
+
+def list_my_certificados(uuid, dir):
+    global url
+    urlCertificados = url+"api/v2/certificados"
+    params = {
+        'uuid': uuid,
+    }
+    params = json.dumps(params)
+        
+    print('conectando a '+urlCertificados)
+    print('uuid '+uuid)
+
+    responseJson = send_request(urlCertificados, params)
+    if(responseJson):    
+        registros = [{"certificado_uuid": registro["uuid"], "nome": registro["razao_social"]+'|'+registro['cnpj'], "estado": registro['pivot']["estado"], "cnpj": registro["cnpj"], "num_serie": registro["num_serie"]} for registro in responseJson]
+        update_data(dir+'/db.txt', 'registros', registros)
+    return []
+
+def enable_my_certificados(uuid, certificados):
+    global url
+    urlEnable = url+"api/v2/certificados/enable"
+    params = {
+        'uuid': uuid,
+        'certificados': certificados
+    }
+    params = json.dumps(params)
+        
+    print('conectando a '+urlEnable)
+    print('uuid '+uuid)
+
+    responseJson = send_request(urlEnable, params)
     return []
 
 def install_certificate(certificate, senha, self = None, registro = ''):
@@ -100,6 +135,11 @@ def install_certificate(certificate, senha, self = None, registro = ''):
     return cnpj
 
 def uninstall_certificate(serie):
+    if(serie == None):
+        print('Numero de serie vazio')
+        return
+    else:
+        print("removendo certificado "+serie)
     retorno = os.popen('certutil -user -delstore "MY" '+serie).read()
     print(retorno)
     if("Excluindo certificado" in retorno and "comando conclu" in retorno):
@@ -258,7 +298,8 @@ def send_user(usuario, uuid, token, certificados, versao):
 def save_encrypted_data(data, filename):
     data['conexao'] = str(datetime.datetime.now())
     data_str = json.dumps(data)
-    del(data['acoes'])
+    if('acoes' in data):
+        del(data['acoes'])
     key = get_random_bytes(32)
     cipher = AES.new(key, AES.MODE_EAX)
     ciphertext, tag = cipher.encrypt_and_digest(data_str.encode())
@@ -271,10 +312,16 @@ def save_encrypted_data(data, filename):
 
 def decrypt_data(filename):
     with open(filename, 'r') as file_in:
-        key = base64.b64decode(file_in.readline().strip())
-        nonce = base64.b64decode(file_in.readline().strip())
-        tag = base64.b64decode(file_in.readline().strip())
-        ciphertext = base64.b64decode(file_in.readline().strip())
+        lines = file_in.readlines()
+        
+        if not lines:  # Se o arquivo estiver vazio, retorna um objeto vazio
+            return {}
+
+        # Caso o arquivo não esteja vazio, realiza a decriptação normalmente
+        key = base64.b64decode(lines[0].strip())
+        nonce = base64.b64decode(lines[1].strip())
+        tag = base64.b64decode(lines[2].strip())
+        ciphertext = base64.b64decode(lines[3].strip())
 
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
 

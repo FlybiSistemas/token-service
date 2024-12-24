@@ -7,8 +7,9 @@ except:
     uuidNow = get_user_uuid()
 # uuidOld = get_uuid()
 
-# uuidNow = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
-# uuidOld = 'QzQ2Rjc4NkQtQjAwNi1FMjExLTgzQzYtODQzNDk3MTc0NUVDQ2FzYQ=='
+if os.path.exists('uuid.txt'):
+    with open('uuid.txt', 'r') as file:
+        uuidNow = file.read().strip()
 # parametro = {}
 # parametro['funcao'] = 'AC'
 # parametro['valor'] =' ByTokenSetup_868e3298'
@@ -23,8 +24,25 @@ try:
         sys.exit()
 
     if('AC' in parametro['funcao']): #Atualizar certificados
-        print('Iniciando chamda de atualização')
+        print('Iniciando chamada de atualização')
         completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        update_status_actions(completedActions)
+        pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
+        sys.exit()
+        
+    if('EC' in parametro['funcao']): #escolher certificados
+        registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
+        registros_filtrados = []
+        enabled = []
+        for registro in registros:
+            if registro["estado"] == 'D':
+                registros_filtrados.append(registro)
+                uninstall_certificate(registro['num_serie'])
+            else:
+                enabled.append(registro["certificado_uuid"])
+        print(f'{len(registros_filtrados)} registros devem estar habilitados na plataforma')
+        enable_my_certificados(uuidNow, enabled)
+        completedActions = update_my_certificates(registros_filtrados, pathBytoken.usuario, uuidNow, pathBytoken.directory)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         sys.exit()
@@ -90,6 +108,10 @@ try:
     if('SC' in parametro['funcao']): #Enviar certificado usado
         send_used_certificate(parametro['valor'], parametro['aux'], pathBytoken.usuario, uuidNow)
         sys.exit()
+
+    if('LC' in parametro['funcao']): #Listar certificados permitidos
+        print('Pegando lista de certificados')
+        list_my_certificados(uuidNow, pathBytoken.directory)
 
     print('finalizando ...')
     
