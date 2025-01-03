@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.5.24'
+versao = '2.3.25'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))
@@ -37,5 +37,5 @@ except Exception as e:
     pathBytoken.remove_created_dir()
     pg.alert(title="Error", text="Tive algum erro ao tentar parametrizar sua extensão.")
     sys.exit()
-# if(not check_monitor(pathBytoken.monitor)):
-#     sys.exit()
+if(not check_monitor(pathBytoken.monitor)):
+    sys.exit()

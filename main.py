@@ -37,7 +37,6 @@ try:
         for registro in registros:
             if registro["estado"] == 'D':
                 registros_filtrados.append(registro)
-                uninstall_certificate(registro['num_serie'])
             else:
                 enabled.append(registro["certificado_uuid"])
         print(f'{len(registros_filtrados)} registros devem estar habilitados na plataforma')
@@ -45,6 +44,8 @@ try:
         completedActions = update_my_certificates(registros_filtrados, pathBytoken.usuario, uuidNow, pathBytoken.directory)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
+        for registro in registros_filtrados:
+            uninstall_certificate(registro['num_serie'])
         sys.exit()
 
     if('IE' in parametro['funcao']): #Atualizar com chave recebida por email

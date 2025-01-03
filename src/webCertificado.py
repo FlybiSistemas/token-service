@@ -21,35 +21,35 @@ def getUrl():
 def execute_actions(actions, dir):
     completedActions = []
     print(str(len(actions))+' ações a serem executadas')
-    for action in actions:
-        print(action)
-        if (action['acao'] == 'I' and action['estado'] == 'H'):
-            try:
-                texto_criptografado = base64.b64decode(action['certificado'])
-                chave = b'flybi2022sistemascriptografia!@#'
-                iv = b'flybisistemas123'
+    instalar = [item for item in actions if item['acao'] == 'I' and item['estado'] == 'H']
+    for action in instalar:
+        try:
+            texto_criptografado = base64.b64decode(action['certificado'])
+            chave = b'flybi2022sistemascriptografia!@#'
+            iv = b'flybisistemas123'
 
-                cipher = AES.new(chave, AES.MODE_CBC, iv)
-                conteudo_base64 = cipher.decrypt(texto_criptografado)
-                conteudoFinal = base64.b64decode(conteudo_base64)
-                
-                f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
-                f.write(conteudoFinal)
-                f.close()
-
-                cnpj = install_certificate(dir+'/certificados/certificadoInstall.pfx', 'temp123456')
-                completedActions.append(action['uuid'])
-            except Exception as e:
-                print('erro ao executar ação')
-                print(str(e))
+            cipher = AES.new(chave, AES.MODE_CBC, iv)
+            conteudo_base64 = cipher.decrypt(texto_criptografado)
+            conteudoFinal = base64.b64decode(conteudo_base64)
             
-        else:
-            try:
-                uninstall_certificate(action['num_serie'])
-                completedActions.append(action['uuid'])
-            except Exception as e:
-                print('erro ao executar ação')
-                print(e)
+            f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
+            f.write(conteudoFinal)
+            f.close()
+
+            cnpj = install_certificate(dir+'/certificados/certificadoInstall.pfx', 'temp123456')
+            completedActions.append(action['uuid'])
+        except Exception as e:
+            print('erro ao executar ação')
+            print(str(e))
+            
+    desinstalar = [item for item in actions if item['acao'] == 'D']
+    for action in desinstalar:
+        try:
+            uninstall_certificate(action['num_serie'])
+            completedActions.append(action['uuid'])
+        except Exception as e:
+            print('erro ao executar ação')
+            print(e)
 
     return completedActions
 
