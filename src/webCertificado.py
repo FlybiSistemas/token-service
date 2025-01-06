@@ -332,7 +332,13 @@ def decrypt_data(filename):
 
 def update_data(filename, chave, valor):
     data = decrypt_data(filename)
-    data[chave] = valor
+    if(';' in chave):
+        chave = chave.split(';')
+        if(chave[0] not in data):
+            data[chave[0]] = {}
+        data[chave[0]][chave[1]] = valor
+    else:
+        data[chave] = valor
     save_encrypted_data(data, filename)
     
 def send_used_certificate(cnpj, ip, usuario, uuid):

@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.3.25'
+versao = '2.5.26'
 parametro = False
 if(len(sys.argv) > 1):
     print('Função: '+str(sys.argv[1]))
@@ -16,6 +16,9 @@ if(len(sys.argv) > 1):
     if(len(sys.argv) > 3):
         parametro['aux'] = sys.argv[3]
         print('Auxiliar: '+str(sys.argv[3]))
+    if(len(sys.argv) > 4):
+        parametro['ext'] = sys.argv[4]
+        print('Extra: '+str(sys.argv[4]))
 # parametro['valor'] = 'ByTokenSetup_1b083f8c'
 pathBytoken = Directory()
 if(not pathBytoken.success):
