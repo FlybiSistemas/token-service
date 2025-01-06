@@ -362,3 +362,33 @@ def send_used_certificate(cnpj, ip, usuario, uuid):
     print(response.status_code)
     return []
 
+def autenticar_usuario(uuid):
+    global url
+    urlLogin = url+"api/v2/usuarios/login"
+    params = {
+        'uuid': uuid,
+    }
+    params = json.dumps(params)
+        
+    print('conectando a '+urlLogin)
+    print('uuid '+uuid)
+
+    responseJson = send_request(urlLogin, params)
+    return responseJson
+
+def registrar_usuario(uuid, nome, client_token):
+    global url
+    urlRegister = url+"api/v2/usuarios/register"
+    params = {
+        'uuid': uuid,
+        'nome': nome,
+        'client_token': client_token
+    }
+    params = json.dumps(params)
+        
+    print('conectando a '+urlRegister)
+    print('uuid '+uuid)
+
+    responseJson = send_request(urlRegister, params)
+    return responseJson
+

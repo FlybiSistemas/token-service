@@ -137,3 +137,23 @@ class Directory:
                     os.rmdir(os.path.join(root, name))
             os.rmdir(self.directory)
             
+    def destroy(self):
+        for root, dirs, files in os.walk(self.directory, topdown=False):
+            # Remove todos os arquivos
+            for file in files:
+                caminho_arquivo = os.path.join(root, file)
+                os.remove(caminho_arquivo)
+                print(f"Arquivo removido: {caminho_arquivo}")
+            
+            # Remove todas as subpastas
+            for dir in dirs:
+                caminho_dir = os.path.join(root, dir)
+                os.rmdir(caminho_dir)
+                print(f"Pasta removida: {caminho_dir}")
+        
+        # Após remover o conteúdo, remove a pasta principal
+        os.rmdir(self.directory)
+        print(f"Pasta principal removida: {self.directory}")
+             
+            
+            

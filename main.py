@@ -119,6 +119,61 @@ try:
         print('Pegando lista de certificados')
         list_my_certificados(uuidNow, pathBytoken.directory)
 
+    # Funções extras
+    if('DA' in parametro['funcao']): #Desinstalar app
+        print("lendo arquivo db...")
+        try:
+            registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
+            print(len(registros)+' certificados para desistalar')
+            for registro in registros:
+                uninstall_certificate(registro['num_serie'])
+        except Exception as e:
+            print(e)
+        print('removendo pasta')
+        pathBytoken.destroy()
+        
+        
+        sys.exit()
+
+    # Funções Login
+    if('LG' in parametro['funcao']):
+        print('Iniciando processo de autenticação')
+        r = autenticar_usuario(parametro['valor'])
+        if(r):
+            pg.alert('Usuário autenticado com sucesso!')
+            update_data(pathBytoken.directory+'/db.txt', 'perfil;login', parametro['valor'])
+            update_data(pathBytoken.directory+'/db.txt', 'perfil;usuario', r['usuario']['nome'])
+            try:
+                registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
+                print(len(registros)+' certificados para desistalar')
+                for registro in registros:
+                    uninstall_certificate(registro['num_serie'])
+            except:
+                print('Erro ao procurar certificados para desinstalar.')
+            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+            update_status_actions(completedActions)
+        else:
+            pg.alert('Usuário ou senha incorretos.')
+            
+    if('RG' in parametro['funcao']):
+        print('Iniciando processo de registro')
+        r = registrar_usuario(parametro['valor'], parametro['aux'], parametro['ext'])
+        if(r):
+            pg.alert('Usuário registrado com sucesso!')
+            update_data(pathBytoken.directory+'/db.txt', 'perfil;login', parametro['valor'])
+            update_data(pathBytoken.directory+'/db.txt', 'perfil;usuario', r['usuario']['nome'])
+            try:
+                registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
+                print(len(registros)+' certificados para desistalar')
+                for registro in registros:
+                    uninstall_certificate(registro['num_serie'])
+            except:
+                print('Erro ao procurar certificados para desinstalar.')
+            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+            update_status_actions(completedActions)
+        else:
+            pg.alert('Usuário ou senha incorretos.')
+
     print('finalizando ...')
     
 except Exception as e:
