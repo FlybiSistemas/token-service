@@ -2,14 +2,19 @@ from preload import *
 
 try:
     db_data = decrypt_data(pathBytoken.directory+'/db.txt')
-    if('login' in db_data['perfil']):
+    if('perfil' in db_data and 'login' in db_data['perfil']):
         uuidNow = db_data['perfil']['login']
         print('UUID recuperado do banco, variavel login')
-    else:
+    elif('perfil' in db_data and 'uuid' in db_data['perfil']):
         uuidNow = db_data['perfil']['uuid']
         print('UUID recuperado do banco, variavel uuid')
-except:
-    print('Nenhum UUID salvo no banco local.')
+    else:
+        uuidNow = get_user_uuid()
+        print('gerado UUID da maquina')
+except Exception as e:
+    print(e)
+    uuidNow = get_user_uuid()
+    print('Gerando UUID da maquina')
 # uuidOld = get_uuid()
 
 if os.path.exists('uuid.txt'):

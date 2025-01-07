@@ -103,7 +103,10 @@ def list_my_certificados(uuid, dir):
     responseJson = send_request(urlCertificados, params)
     if(responseJson):    
         registros = [{"certificado_uuid": registro["uuid"], "nome": registro["razao_social"]+'|'+registro['cnpj'], "estado": registro['pivot']["estado"], "cnpj": registro["cnpj"], "num_serie": registro["num_serie"]} for registro in responseJson]
-        update_data(dir+'/db.txt', 'registros', registros)
+        print(len(registros)+' registros')
+    else:
+        registros = []
+    update_data(dir+'/db.txt', 'registros', registros)
     return []
 
 def enable_my_certificados(uuid, certificados):
