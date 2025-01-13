@@ -76,9 +76,6 @@ def update_my_certificates(certs, usuario, uuid, dir):
         'usuario': usuario
     }
     params = json.dumps(params)
-        
-    print('conectando a '+url)
-    print('uuid '+uuid)
 
     responseJson = send_request(urlActions, params)
     if(responseJson):
@@ -96,16 +93,33 @@ def list_my_certificados(uuid, dir):
         'uuid': uuid,
     }
     params = json.dumps(params)
-        
-    print('conectando a '+urlCertificados)
-    print('uuid '+uuid)
 
     responseJson = send_request(urlCertificados, params)
-    if(responseJson):    
-        registros = [{"certificado_uuid": registro["uuid"], "nome": registro["razao_social"]+'|'+registro['cnpj'], "estado": registro['pivot']["estado"], "cnpj": registro["cnpj"], "num_serie": registro["num_serie"]} for registro in responseJson]
-        print(len(registros)+' registros')
+    if(responseJson):
+        series = []
+        registros = [] 
+        for registro in responseJson:
+            registros.append({
+                "certificado_uuid": registro["uuid"],
+                "nome": registro["razao_social"] + '|' + registro['cnpj'],
+                "estado": registro['pivot']["estado"],
+                "cnpj": registro["cnpj"],
+                "num_serie": registro["num_serie"]
+            })
+            series.append(registro['num_serie'])
+
+        print(str(len(registros))+' registros')
     else:
+        print('0 certificados')
         registros = []
+    try:
+        registros_atuais = decrypt_data(dir+'/db.txt')['registros']
+        for registro in registros_atuais:
+            if(registro['num_serie'] not in series):
+                uninstall_certificate(registro['num_serie'])
+    except Exception as e:
+        print(str(e))
+        
     update_data(dir+'/db.txt', 'registros', registros)
     return []
 
@@ -128,7 +142,6 @@ def install_certificate(certificate, senha, self = None, registro = ''):
     global usuario
 
     r = os.popen('certutil -csp "Microsoft Enhanced Cryptographic Provider v1.0" -user -p ' + senha + ' -importpfx "MY" "' + certificate+'" NoExport').read()
-    print(r)
     erro = show_errors_installation(r, self)
     if(type(erro) == list):
         return erro
@@ -144,7 +157,6 @@ def uninstall_certificate(serie):
     else:
         print("removendo certificado "+serie)
     retorno = os.popen('certutil -user -delstore "MY" '+serie).read()
-    print(retorno)
     if("Excluindo certificado" in retorno and "comando conclu" in retorno):
         razao = retorno.split("CN=")[1].split(":")[0]
         return razao
@@ -184,7 +196,7 @@ def get_object_certificates():
     certificados = []
     for line in lines:
         try:
-            if('Requerente' not in line and "Número de Série" not in line and "Emissor" not in line and "NotAfter" not in line):
+            if('Requerente' not in line and "Número de Série" not in line and "Emissor" not in line and "NotAfter" not in line and 'chave =' not in line):
                 continue
 
             if ("Emissor" in line):
@@ -203,27 +215,39 @@ def get_object_certificates():
                 camposRequerente = line.replace('Requerente: ','').split(',')
                 requerente = next((item for item in camposRequerente if "CN=" in item), None)
                 requerente = requerente.split('=')[1].split(":")
-                # requerente = line.split(',')[0].split(': CN=')[1].split(':')
                 if len(requerente) == 1:
-                    #print("Não é um certificado do usuário")
                     continue
                 cnpj = requerente[1].strip()
                 razao_social = requerente[0].strip()
+
+            # Procurar pelo container da chave
+            if 'chave =' in line:
+                container = line.split('=')[1].strip()
                 certificados.append(
                     {
                         "cnpj": cnpj,
                         "razao_social": razao_social,
                         "num_serie": numero_serie,
                         "data_validade": data_validade,
-                        "emissor": emissor
+                        "emissor": emissor,
+                        "container": container
                     }
                 )
-                cont = cont + 1
+                cont += 1
                 continue
         except Exception as e:
             print(e)
             continue
     return certificados
+
+def find_certificate_by_container(certificates, container_value):
+    # Procurar o certificado pelo container da chave
+    print(f'iniciando leitura de {len(certificates)} certificados')
+    for cert in certificates:
+        print(f'verificando se {cert['container']} é igual a {container_value}')
+        if cert['container'] == container_value:
+            return cert
+    return None
 
 def get_certificates(chave, usuario, uuid):
     url = getUrl()+"api/v2/acoes/token-mail"
@@ -278,8 +302,6 @@ def send_user(usuario, uuid, token, certificados, versao):
         'certificados': certificados,
         'version': versao
     })
-    print('URL: '+urlSend)
-    print('Dados: '+urlSend)
 
     headers = {
         'Content-Type': 'application/json',
@@ -394,4 +416,3 @@ def registrar_usuario(uuid, nome, client_token):
 
     responseJson = send_request(urlRegister, params)
     return responseJson
-

@@ -54,20 +54,21 @@ def get_user_uuid():
     uuidHash = base64.b64encode(uuidHash.encode('utf-8'))
     return uuidHash.decode()
 
-def create_schedule(tarefa, tipo, tempo, exe):
+def create_schedule(tarefa, tipo, tempo, exe, admin=False):
     tarefa = unidecode(tarefa).lower()
     if not os.path.isfile(exe):
         return ['error', 'Erro ao localizar serviço.']
+    admin_flag = ' /RL HIGHEST' if admin else ''
     if(tipo == 1):
-        a = os.popen('schtasks /create /sc hourly /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\'"').read()
-        # schtasks /create /sc hourly /mo 1 /tn "FlyToken" /tr "C:\Users\gabri\Documents\GitHub\FlyToken\dist\FlyToken.exe"
+        a = os.popen('schtasks /create /sc hourly /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag).read()
+        # schtasks /create /sc hourly /mo 1 /tn "FlyToken" /tr "C:\Users\gabri\Documents\GitHub\FlyToken\dist\FlyToken.exe" 
     elif(tipo == 2):
-        a = os.popen('schtasks /create /sc daily /tn "'+tarefa+'" /tr "\''+exe+'\'" /st '+tempo).read()
+        a = os.popen('schtasks /create /sc daily /tn "'+tarefa+'" /tr "\''+exe+'\'" /st '+tempo+admin_flag).read()
     elif(tipo == 3):
-        comando = 'schtasks /create /sc minute /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\'"'
+        comando = 'schtasks /create /sc minute /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag 
         a = os.popen(comando).read()
     elif(tipo == 4):
-        comando = 'schtasks /create /sc onlogon /tn "'+tarefa+'" /tr "\''+exe+'\'"'
+        comando = 'schtasks /create /sc onlogon /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag
         a = os.popen(comando).read()
     if("XITO" in a):
         return True

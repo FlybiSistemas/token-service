@@ -84,10 +84,8 @@ try:
                 sys.exit()
 
     if('CU' in parametro['funcao']):
-        print('Iniciando cadastro de usuário')
         try:
             retorno = send_user(pathBytoken.usuarioNome, uuidNow, parametro['valor'], pathBytoken.get_object_certificates(), versao)
-            print('salvar dados no banco')
             save_encrypted_data(retorno, pathBytoken.directory+'/db.txt')
             print('Conexão '+pathBytoken.usuarioNome+' finalizada!')
         except Exception as e:
@@ -117,7 +115,13 @@ try:
         pg.alert('Extensão configurada com sucesso!!')
 
     if('SC' in parametro['funcao']): #Enviar certificado usado
-        send_used_certificate(parametro['valor'], parametro['aux'], pathBytoken.usuario, uuidNow)
+        print('pegando certificados')
+        certificates = get_object_certificates()
+        print('procurando certificado')
+        certificate = find_certificate_by_container(certificates, parametro['valor'])
+        if(certificate):
+            print(f'certificado {certificate['cnpj']} encontrado')
+            send_used_certificate(certificate['cnpj'], parametro['aux'], pathBytoken.usuario, uuidNow)
         sys.exit()
 
     if('LC' in parametro['funcao']): #Listar certificados permitidos
