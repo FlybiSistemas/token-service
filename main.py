@@ -15,7 +15,6 @@ except Exception as e:
     print(e)
     uuidNow = get_user_uuid()
     print('Gerando UUID da maquina')
-# uuidOld = get_uuid()
 
 if os.path.exists('uuid.txt'):
     with open('uuid.txt', 'r') as file:
@@ -85,6 +84,7 @@ try:
 
     if('CU' in parametro['funcao']):
         try:
+            print('iniciando funcao de cadastrar usuario')
             retorno = send_user(pathBytoken.usuarioNome, uuidNow, parametro['valor'], pathBytoken.get_object_certificates(), versao)
             save_encrypted_data(retorno, pathBytoken.directory+'/db.txt')
             print('Conexão '+pathBytoken.usuarioNome+' finalizada!')
@@ -115,13 +115,36 @@ try:
         pg.alert('Extensão configurada com sucesso!!')
 
     if('SC' in parametro['funcao']): #Enviar certificado usado
-        print('pegando certificados')
-        certificates = get_object_certificates()
-        print('procurando certificado')
-        certificate = find_certificate_by_container(certificates, parametro['valor'])
-        if(certificate):
-            print(f'certificado {certificate['cnpj']} encontrado')
-            send_used_certificate(certificate['cnpj'], parametro['aux'], pathBytoken.usuario, uuidNow)
+        with open(pathBytoken.log+'/monitoramento.txt', 'r') as file:
+            lines = file.readlines()
+        
+        for line in lines:
+            try:
+                line = line.replace("'", '"')
+                data = json.loads(line.strip())
+                certificate = data['certificado']
+                ips_used = data['ips_usados']
+                timestamp = data['horario']
+                user = data['usuario']
+                print(f'Certificado: {certificate}')
+                print(f'Horário: {timestamp}')
+                certificates = get_object_certificates()
+                print('procurando certificado')
+                certificate = find_certificate_by_container(certificates, certificate)
+                print(certificate)
+                if(certificate):
+                        print(f'certificado {certificate["cnpj"]} encontrado')
+                        send_used_certificate(certificate['cnpj'], ips_used, pathBytoken.usuario, uuidNow)
+                        print('Uso enviado para plataforma com sucesso!')
+                else:
+                    print('certificado não encontrado')
+            except Exception as e:
+                print(e)
+                pathBytoken.send_log(str(e))
+        
+        # Clear the content of the file after processing
+        open(pathBytoken.log+'/monitoramento.txt', 'w').close()
+            
         sys.exit()
 
     if('LC' in parametro['funcao']): #Listar certificados permitidos

@@ -56,8 +56,8 @@ def get_user_uuid():
 
 def create_schedule(tarefa, tipo, tempo, exe, admin=False):
     tarefa = unidecode(tarefa).lower()
-    if not os.path.isfile(exe):
-        return ['error', 'Erro ao localizar serviço.']
+    # if not os.path.isfile(exe):
+    #     return ['error', 'Erro ao localizar serviço.']
     admin_flag = ' /RL HIGHEST' if admin else ''
     if(tipo == 1):
         a = os.popen('schtasks /create /sc hourly /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag).read()
@@ -69,6 +69,9 @@ def create_schedule(tarefa, tipo, tempo, exe, admin=False):
         a = os.popen(comando).read()
     elif(tipo == 4):
         comando = 'schtasks /create /sc onlogon /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag
+        a = os.popen(comando).read()
+    elif(tipo == 'SC'):
+        comando = 'schtasks /create /sc minute /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\' SC"'+admin_flag 
         a = os.popen(comando).read()
     if("XITO" in a):
         return True

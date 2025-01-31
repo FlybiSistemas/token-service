@@ -20,38 +20,65 @@ def getUrl():
 
 def execute_actions(actions, dir):
     completedActions = []
-    print(str(len(actions))+' ações a serem executadas')
+    print(f'{len(actions)} ações a serem executadas')
+
     instalar = [item for item in actions if item['acao'] == 'I' and item['estado'] == 'H']
+    print(f'{len(instalar)} ações de instalação a serem executadas')
     for action in instalar:
         try:
-            texto_criptografado = base64.b64decode(action['certificado'])
-            chave = b'flybi2022sistemascriptografia!@#'
-            iv = b'flybisistemas123'
-
-            cipher = AES.new(chave, AES.MODE_CBC, iv)
-            conteudo_base64 = cipher.decrypt(texto_criptografado)
-            conteudoFinal = base64.b64decode(conteudo_base64)
-            
-            f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
-            f.write(conteudoFinal)
-            f.close()
-
-            cnpj = install_certificate(dir+'/certificados/certificadoInstall.pfx', 'temp123456')
-            completedActions.append(action['uuid'])
+            print(f'Instalando certificado: {action["uuid"]}')
+            install_content(dir, completedActions, action)
+            print(f'Certificado {action["uuid"]} instalado com sucesso')
         except Exception as e:
-            print('erro ao executar ação')
-            print(str(e))
-            
-    desinstalar = [item for item in actions if item['acao'] == 'D']
-    for action in desinstalar:
-        try:
-            uninstall_certificate(action['num_serie'])
-            completedActions.append(action['uuid'])
-        except Exception as e:
-            print('erro ao executar ação')
+            print(f'Erro ao instalar certificado {action["uuid"]}')
             print(e)
 
+    desinstalar = [item for item in actions if item['acao'] == 'D']
+    print(f'{len(desinstalar)} ações de desinstalação a serem executadas')
+    for action in desinstalar:
+        try:
+            print(f'Desinstalando certificado: {action["num_serie"]}')
+            uninstall_certificate(action['num_serie'])
+            completedActions.append(action['uuid'])
+            print(f'Certificado {action["num_serie"]} desinstalado com sucesso')
+        except Exception as e:
+            print(f'Erro ao desinstalar certificado {action["num_serie"]}')
+            print(e)
+
+    substituir = [item for item in actions if item['acao'] == 'S']
+    print(f'{len(substituir)} ações de substituição a serem executadas')
+    for action in substituir:
+        try:
+            print(f'Substituindo certificado para CNPJ: {action["cnpj"]}')
+            uninstall_certificate_by_cnpj(action['cnpj'])
+            install_content(dir, completedActions, action)
+            print(f'Certificado para CNPJ {action["cnpj"]} substituído com sucesso')
+        except Exception as e:
+            print(f'Erro ao substituir certificado para CNPJ {action["cnpj"]}')
+            print(e)
+
+    print('Ações concluídas\n')
     return completedActions
+
+def install_content(dir, completedActions, action):
+    try:
+        texto_criptografado = base64.b64decode(action['certificado'])
+        chave = b'flybi2022sistemascriptografia!@#'
+        iv = b'flybisistemas123'
+
+        cipher = AES.new(chave, AES.MODE_CBC, iv)
+        conteudo_base64 = cipher.decrypt(texto_criptografado)
+        conteudoFinal = base64.b64decode(conteudo_base64)
+            
+        f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
+        f.write(conteudoFinal)
+        f.close()
+
+        cnpj = install_certificate(dir+'/certificados/certificadoInstall.pfx', 'temp123456')
+        completedActions.append(action['uuid'])
+    except Exception as e:
+        print('erro ao executar ação')
+        print(str(e))
 
 def send_request(url, params):
     headers = {
@@ -142,6 +169,7 @@ def install_certificate(certificate, senha, self = None, registro = ''):
     global usuario
 
     r = os.popen('certutil -csp "Microsoft Enhanced Cryptographic Provider v1.0" -user -p ' + senha + ' -importpfx "MY" "' + certificate+'" NoExport').read()
+    print(r)
     erro = show_errors_installation(r, self)
     if(type(erro) == list):
         return erro
@@ -161,6 +189,33 @@ def uninstall_certificate(serie):
         razao = retorno.split("CN=")[1].split(":")[0]
         return razao
     return False 
+
+def get_serial_number_by_cnpj(cnpj):
+    certificates = os.popen('certutil -user -store "MY"').read()
+    lines = certificates.split("\n")
+    for line in lines:
+        if('Requerente' not in line and "Número de Série" not in line):
+            continue
+
+        if ("Número de Série" in line):
+            numero_serie = line.split(":")[1].strip()
+            #print(numero_serie)
+
+        if ('Requerente' in line):
+            requerente = line.split(',')[0].split(': CN=')[1].split(':')
+            if(len(requerente) == 1):
+                continue
+            if(requerente[1].strip() == cnpj):
+                return numero_serie
+
+def uninstall_certificate_by_cnpj(cnpj):
+    razao = True
+    #print('removerndo certificado cnpj:'+cnpj)
+    serial = get_serial_number_by_cnpj(cnpj)
+    #print("Iniciando desinstalação...")
+    if(serial != None):
+        razao = uninstall_certificate(serial)
+    return razao
 
 def show_errors_installation(erro, self):
     if "FALHOU" in erro:
@@ -244,7 +299,6 @@ def find_certificate_by_container(certificates, container_value):
     # Procurar o certificado pelo container da chave
     print(f'iniciando leitura de {len(certificates)} certificados')
     for cert in certificates:
-        print(f'verificando se {cert['container']} é igual a {container_value}')
         if cert['container'] == container_value:
             return cert
     return None
@@ -307,10 +361,8 @@ def send_user(usuario, uuid, token, certificados, versao):
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     }
-
     response = requests.request('POST',urlSend, headers=headers, data=params)
     if(response.status_code == 200):
-        print('Conectado com sucesso')
         retorno = response.json()
         response.close()
         retorno['perfil'] = {}
