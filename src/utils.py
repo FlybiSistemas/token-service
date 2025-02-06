@@ -8,6 +8,7 @@ from unidecode import unidecode
 import uuid
 import wmi
 import winreg
+from datetime import datetime, timedelta
 
 def check_processes(aplicacao, x = 0):
     cont = 0
@@ -55,6 +56,24 @@ def get_user_uuid():
     return uuidHash.decode()
 
 def create_schedule(tarefa, tipo, tempo, exe, admin=False):
+    """
+    Cria uma tarefa agendada no Windows usando o comando `schtasks`.
+
+    Args:
+        tarefa (str): O nome da tarefa a ser criada.
+        tipo (int or str): O tipo de agendamento da tarefa. Pode ser:
+            1 - Tarefa agendada para ser executada a cada 'tempo' horas.
+            2 - Tarefa agendada para ser executada diariamente às 'tempo' horas.
+            3 - Tarefa agendada para ser executada a cada 'tempo' minutos.
+            4 - Tarefa agendada para ser executada no logon do usuário.
+            'SC' - Tarefa agendada para ser executada a cada 'tempo' minutos com um parâmetro adicional 'SC'.
+        tempo (int or str): O intervalo de tempo ou horário específico para a execução da tarefa.
+        exe (str): O caminho completo do executável a ser executado pela tarefa agendada.
+        admin (bool, optional): Se True, a tarefa será criada com privilégios de administrador. Padrão é False.
+
+    Returns:
+        bool or list: Retorna True se a tarefa foi criada com sucesso, caso contrário, retorna uma lista contendo 'error' e a mensagem de erro.
+    """
     tarefa = unidecode(tarefa).lower()
     # if not os.path.isfile(exe):
     #     return ['error', 'Erro ao localizar serviço.']
@@ -69,6 +88,10 @@ def create_schedule(tarefa, tipo, tempo, exe, admin=False):
         a = os.popen(comando).read()
     elif(tipo == 4):
         comando = 'schtasks /create /sc onlogon /tn "'+tarefa+'" /tr "\''+exe+'\'"'+admin_flag
+        a = os.popen(comando).read()
+    elif tipo == 5:
+        start_time = (datetime.now() - timedelta(hours=1)).strftime('%H:%M')
+        comando = f'schtasks /create /tn "{tarefa}" /tr "\'{exe}\' uninstall" /sc once /st {start_time}{admin_flag} /ru "SYSTEM" /np /f'
         a = os.popen(comando).read()
     elif(tipo == 'SC'):
         comando = 'schtasks /create /sc minute /mo '+str(tempo)+' /tn "'+tarefa+'" /tr "\''+exe+'\' SC"'+admin_flag 

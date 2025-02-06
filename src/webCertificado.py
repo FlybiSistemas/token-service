@@ -128,10 +128,11 @@ def list_my_certificados(uuid, dir):
         for registro in responseJson:
             registros.append({
                 "certificado_uuid": registro["uuid"],
-                "nome": registro["razao_social"] + '|' + registro['cnpj'],
+                "nome": registro["razao_social"] + ' | ' + registro['cnpj'] + ' | (' + registro['data_validade'] + ')',
                 "estado": registro['pivot']["estado"],
                 "cnpj": registro["cnpj"],
-                "num_serie": registro["num_serie"]
+                "num_serie": registro["num_serie"],
+                "data_validade": registro["data_validade"],
             })
             series.append(registro['num_serie'])
 

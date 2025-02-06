@@ -25,21 +25,24 @@ if os.path.exists('uuid.txt'):
 # parametro['valor'] ='3ZOwnBAtsMAIG19BA56CAk2xWWp2pxb2QyFhP1aHkXlA'
 
 try:
+    object_cerficates = get_object_certificates()
     if(not parametro):
         print('Iniciando atualização padrão')
-        object_cerficates = get_object_certificates()
         completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken.directory)
         update_status_actions(completedActions)
         sys.exit()
 
     if('AC' in parametro['funcao']): #Atualizar certificados
         print('Iniciando chamada de atualização')
-        completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken.directory)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         sys.exit()
         
     if('EC' in parametro['funcao']): #escolher certificados
+        seriesCerts = []
+        if(len(object_cerficates) > 1):
+            seriesCerts = [cert['num_serie'] for cert in object_cerficates]
         registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
         registros_filtrados = []
         enabled = []
@@ -54,7 +57,8 @@ try:
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         for registro in registros_filtrados:
-            uninstall_certificate(registro['num_serie'])
+            if(registro['num_serie'] in seriesCerts or registro['num_serie'].lower() in seriesCerts):
+                uninstall_certificate(registro['num_serie'])
         sys.exit()
 
     if('IE' in parametro['funcao']): #Atualizar com chave recebida por email
@@ -151,22 +155,6 @@ try:
         print('Pegando lista de certificados')
         list_my_certificados(uuidNow, pathBytoken.directory)
 
-    # Funções extras
-    if('DA' in parametro['funcao']): #Desinstalar app
-        print("lendo arquivo db...")
-        try:
-            registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
-            print(len(registros)+' certificados para desistalar')
-            for registro in registros:
-                uninstall_certificate(registro['num_serie'])
-        except Exception as e:
-            print(e)
-        print('removendo pasta')
-        pathBytoken.destroy()
-        
-        
-        sys.exit()
-
     # Funções Login
     if('LG' in parametro['funcao']):
         print('Iniciando processo de autenticação')
@@ -205,6 +193,23 @@ try:
             update_status_actions(completedActions)
         else:
             pg.alert('Usuário ou senha incorretos.')
+            
+    if 'uninstall' in sys.argv:
+        seriesCerts = []
+        if(len(object_cerficates) > 1):
+            seriesCerts = [cert['num_serie'] for cert in object_cerficates]
+        print('Iniciando processo de desinstalação')
+        try:
+            registros = decrypt_data(pathBytoken.directory+'/db.txt')['registros']
+            print(str(len(registros))+' certificados para desistalar')
+            for registro in registros:
+                if(registro['num_serie'] in seriesCerts or registro['num_serie'].lower() in seriesCerts):
+                    uninstall_certificate(registro['num_serie'])
+        except Exception as e:
+            print(e)
+        print('removendo pasta')
+        pathBytoken.destroy()
+        sys.exit()
 
     print('finalizando ...')
     
