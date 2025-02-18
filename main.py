@@ -28,13 +28,13 @@ try:
     object_cerficates = get_object_certificates()
     if(not parametro):
         print('Iniciando atualização padrão')
-        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken)
         update_status_actions(completedActions)
         sys.exit()
 
     if('AC' in parametro['funcao']): #Atualizar certificados
         print('Iniciando chamada de atualização')
-        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        completedActions = update_my_certificates(object_cerficates, pathBytoken.usuario, uuidNow, pathBytoken)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         sys.exit()
@@ -53,7 +53,7 @@ try:
                 enabled.append(registro["certificado_uuid"])
         print(f'{len(registros_filtrados)} registros devem estar habilitados na plataforma')
         enable_my_certificados(uuidNow, enabled)
-        completedActions = update_my_certificates(registros_filtrados, pathBytoken.usuario, uuidNow, pathBytoken.directory)
+        completedActions = update_my_certificates(registros_filtrados, pathBytoken.usuario, uuidNow, pathBytoken)
         update_status_actions(completedActions)
         pg.confirm(text='Atualizado com sucesso!', title='Atenção', buttons=['OK'])
         for registro in registros_filtrados:
@@ -170,7 +170,7 @@ try:
                     uninstall_certificate(registro['num_serie'])
             except:
                 print('Erro ao procurar certificados para desinstalar.')
-            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken)
             update_status_actions(completedActions)
         else:
             pg.alert('Usuário ou senha incorretos.')
@@ -189,7 +189,7 @@ try:
                     uninstall_certificate(registro['num_serie'])
             except:
                 print('Erro ao procurar certificados para desinstalar.')
-            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken.directory)
+            completedActions = update_my_certificates(get_object_certificates(), pathBytoken.usuario, uuidNow, pathBytoken)
             update_status_actions(completedActions)
         else:
             pg.alert('Usuário ou senha incorretos.')

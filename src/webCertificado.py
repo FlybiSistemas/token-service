@@ -18,16 +18,17 @@ def getUrl():
     global url
     return url
 
-def execute_actions(actions, dir):
+def execute_actions(actions, pb):
     completedActions = []
     print(f'{len(actions)} ações a serem executadas')
 
     instalar = [item for item in actions if item['acao'] == 'I' and item['estado'] == 'H']
     print(f'{len(instalar)} ações de instalação a serem executadas')
+    pb.send_log(f'{len(instalar)} ações de instalação a serem executadas')
     for action in instalar:
         try:
             print(f'Instalando certificado: {action["uuid"]}')
-            install_content(dir, completedActions, action)
+            install_content(pb, completedActions, action)
             print(f'Certificado {action["uuid"]} instalado com sucesso')
         except Exception as e:
             print(f'Erro ao instalar certificado {action["uuid"]}')
@@ -35,6 +36,7 @@ def execute_actions(actions, dir):
 
     desinstalar = [item for item in actions if item['acao'] == 'D']
     print(f'{len(desinstalar)} ações de desinstalação a serem executadas')
+    pb.send_log(f'{len(desinstalar)} ações de desinstalação a serem executadas')
     for action in desinstalar:
         try:
             print(f'Desinstalando certificado: {action["num_serie"]}')
@@ -47,20 +49,20 @@ def execute_actions(actions, dir):
 
     substituir = [item for item in actions if item['acao'] == 'S']
     print(f'{len(substituir)} ações de substituição a serem executadas')
+    pb.send_log(f'{len(substituir)} ações de substituição')
     for action in substituir:
         try:
             print(f'Substituindo certificado para CNPJ: {action["cnpj"]}')
             uninstall_certificate_by_cnpj(action['cnpj'])
-            install_content(dir, completedActions, action)
+            install_content(pb, completedActions, action)
             print(f'Certificado para CNPJ {action["cnpj"]} substituído com sucesso')
         except Exception as e:
-            print(f'Erro ao substituir certificado para CNPJ {action["cnpj"]}')
-            print(e)
+            print(str(e))
 
     print('Ações concluídas\n')
     return completedActions
 
-def install_content(dir, completedActions, action):
+def install_content(pb, completedActions, action):
     try:
         texto_criptografado = base64.b64decode(action['certificado'])
         chave = b'flybi2022sistemascriptografia!@#'
@@ -70,15 +72,18 @@ def install_content(dir, completedActions, action):
         conteudo_base64 = cipher.decrypt(texto_criptografado)
         conteudoFinal = base64.b64decode(conteudo_base64)
             
-        f = open(dir+'/certificados/certificadoInstall.pfx', 'wb')
+        f = open(pb.directory+'/certificados/certificadoInstall.pfx', 'wb')
         f.write(conteudoFinal)
         f.close()
 
-        cnpj = install_certificate(dir+'/certificados/certificadoInstall.pfx', 'temp123456')
+        r = install_certificate(pb.directory+'/certificados/certificadoInstall.pfx', 'temp123456')
+        pb.send_log(str(r))
         completedActions.append(action['uuid'])
     except Exception as e:
         print('erro ao executar ação')
         print(str(e))
+        pb.send_log('erro ao executar ação')
+        pb.send_log(f'{str(e)} - Line: {str(e.__traceback__.tb_lineno)}')
 
 def send_request(url, params):
     headers = {
@@ -94,7 +99,7 @@ def send_request(url, params):
             return True
     return False
 
-def update_my_certificates(certs, usuario, uuid, dir):
+def update_my_certificates(certs, usuario, uuid, pb):
     global url
     urlActions = url+"api/v2/acoes"
     params = {
@@ -110,7 +115,7 @@ def update_my_certificates(certs, usuario, uuid, dir):
         if(responseJson['settings']['remove_external_certificates'] == True):
             # uninstall_all_certificates()
             print('nada a fazer')
-        return execute_actions(responseJson['acoes'], dir)
+        return execute_actions(responseJson['acoes'], pb)
     return []
 
 def list_my_certificados(uuid, dir):
@@ -126,13 +131,14 @@ def list_my_certificados(uuid, dir):
         series = []
         registros = [] 
         for registro in responseJson:
+            data_validade = datetime.datetime.strptime(registro["data_validade"], '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%d/%m/%Y')
             registros.append({
                 "certificado_uuid": registro["uuid"],
-                "nome": registro["razao_social"] + ' | ' + registro['cnpj'] + ' | (' + registro['data_validade'] + ')',
+                "nome": registro["razao_social"] + ' | ' + registro['cnpj'] + ' ( ' + data_validade + ' )',
                 "estado": registro['pivot']["estado"],
                 "cnpj": registro["cnpj"],
                 "num_serie": registro["num_serie"],
-                "data_validade": registro["data_validade"],
+                "data_validade": data_validade,
             })
             series.append(registro['num_serie'])
 
@@ -177,7 +183,7 @@ def install_certificate(certificate, senha, self = None, registro = ''):
     
     cnpj = r.split('"')[1].split('"')[0]
     cnpj = cnpj[-14:]
-    return cnpj
+    return r
 
 def uninstall_certificate(serie):
     if(serie == None):

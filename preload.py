@@ -3,7 +3,7 @@ import sys
 from src.directory import Directory
 from src.unzip import *
 from src.webCertificado import *
-versao = '2.7.33'
+versao = '2.7.34'
 parametro = False
 if(len(sys.argv) > 1):
     parametro = {
